@@ -11,10 +11,7 @@ int oldMode = -1;
 int mode = -1;
 int uavType = 2;
 
-long previousMillisR = 0;
-long previousMillisG = 0;
-long previousMillisB = 0;
-
+long previousMillis = 0;
 unsigned long currentMillis;
 
 void setup() {
@@ -36,8 +33,6 @@ void loop() {
     if(mavlink_parse_char(MAVLINK_COMM_0, c, &msg, &status)) {
       switch(msg.msgid) {
         case MAVLINK_MSG_ID_HEARTBEAT:
-          // E.g. read GCS heartbeat and go into
-          // comm lost mode if timer times out
           uavType = mavlink_msg_heartbeat_get_type(&msg);
           mode = mavlink_msg_heartbeat_get_custom_mode(&msg);
           if(mode != oldMode){
@@ -53,7 +48,7 @@ void loop() {
     case 1: //plane
       switch(mode){
         case 0: //manual
-          blinkLED(LED_RED, previousMillisR, 250);
+          blinkLED(LED_RED, 250);
           break;
         case 1: //circle
           break;
@@ -72,10 +67,10 @@ void loop() {
         case 9: //?
           break;
         case 10: //auto
-          blinkLED(LED_BLUE, previousMillisB, 250);
+          blinkLED(LED_BLUE, 250);
           break;
         case 11: //RTL
-          blink2LEDs(LED_RED, LED_BLUE, previousMillisR, 250);
+          blink2LEDs(LED_RED, LED_BLUE, 250);
           break;
         case 12: //loiter
           break;
@@ -84,7 +79,7 @@ void loop() {
           break;
         case 15: //guided
         default:
-          blinkLED(LED_RED, previousMillisR, 100);
+          blinkLED(LED_RED, 100);
           break;
       }
       break;
@@ -99,37 +94,37 @@ void loop() {
           break;
         case 1: //acro
           digitalWrite(LED_GREEN, HIGH);
-          blinkLED(LED_BLUE, previousMillisB, 250);
+          blinkLED(LED_BLUE, 250);
           break;
         case 2: //alt hold
-          blinkLED(LED_BLUE, previousMillisB, 250);
+          blinkLED(LED_BLUE, 250);
           break;
         case 3: //auto
           digitalWrite(LED_RED, HIGH);
           break;
         case 4: //guided
-          blinkLED(LED_RED, previousMillisR, 250);
+          blinkLED(LED_RED, 250);
           break;
         case 5: //loiter
           digitalWrite(LED_BLUE, HIGH);
           break;
         case 6: //RTL
-          blinkAllLEDs(previousMillisR, 150);
+          blinkAllLEDs(150);
           break;
         case 7: //circle
-          blink2LEDs(LED_RED, LED_GREEN, previousMillisR, 250);
+          blink2LEDs(LED_RED, LED_GREEN, 250);
           break;
         case 8: //pos hold
-          blink2LEDs(LED_BLUE, LED_GREEN, previousMillisG, 250);
+          blink2LEDs(LED_BLUE, LED_GREEN, 250);
           break;
         case 9: //land
-          blink2LEDs(LED_RED, LED_BLUE, previousMillisR, 250);
+          blink2LEDs(LED_RED, LED_BLUE, 250);
           break;
         case 10: //of_loiter
           //none
           break;
         default:
-          blinkLED(LED_RED, previousMillisR, 100);
+          blinkLED(LED_RED, 100);
           break;
       }
       break;
@@ -166,66 +161,46 @@ void LEDs(int output){
   }
 }
 
-//blink LED with different on/off intervals
-void blinkLED(int ledPin, long &preMil, long intervalOn, long intervalOff){
-  currentMillis = millis();
-  int ledState = digitalRead(ledPin);
-  
-  if(ledState == LOW){
-    if(currentMillis - preMil > intervalOff){
-      preMil = currentMillis;
-      ledState == HIGH;
-    }
-  }else{
-    if(currentMillis - preMil > intervalOn){
-      preMil = currentMillis;
-      ledState == LOW;
-    }
-  }
-  
-  digitalWrite(ledPin, ledState);
-}
-
 //blink led with the same on/off interval
-void blinkLED(int ledPin, long &preMil, long interval){
+void blinkLED(int ledPin, long interval){
   currentMillis = millis();
   
-  if(currentMillis - preMil > interval){
-    preMil = currentMillis;
+  if(currentMillis - previousMillis > interval){
+    previousMillis = currentMillis;
     digitalWrite(ledPin, !digitalRead(ledPin));
   }
     
 }
 
 //blink 2 LEDs with the same on/off interval
-void blink2LEDs(int ledPin1, int ledPin2, long &preMil, long interval){
+void blink2LEDs(int ledPin1, int ledPin2, long interval){
   currentMillis = millis();
   
-  if(currentMillis - preMil > interval*2){
-    preMil = currentMillis;
-  }else if(currentMillis - preMil > interval){
+  if(currentMillis - previousMillis > interval*2){
+    previousMillis = currentMillis;
+  }else if(currentMillis - previousMillis > interval){
     digitalWrite(ledPin1, LOW);
     digitalWrite(ledPin2, HIGH);
-  }else if(currentMillis - preMil > 0){
+  }else if(currentMillis - previousMillis > 0){
     digitalWrite(ledPin1, HIGH);
     digitalWrite(ledPin2, LOW);
   }
 }
 
-void blinkAllLEDs(long &preMil, long interval){
+void blinkAllLEDs(long interval){
   currentMillis = millis();
   
-  if(currentMillis - preMil > interval*3){
-    preMil = currentMillis;
-  }else if(currentMillis - preMil > interval*2){
+  if(currentMillis - previousMillis > interval*3){
+    previousMillis = currentMillis;
+  }else if(currentMillis - previousMillis > interval*2){
     digitalWrite(LED_RED, LOW);
     digitalWrite(LED_BLUE, LOW);
     digitalWrite(LED_GREEN, HIGH);
-  }else if(currentMillis - preMil > interval){
+  }else if(currentMillis - previousMillis > interval){
     digitalWrite(LED_RED, LOW);
     digitalWrite(LED_BLUE, HIGH);
     digitalWrite(LED_GREEN, LOW);
-  }else if(currentMillis - preMil > 0){
+  }else if(currentMillis - previousMillis > 0){
     digitalWrite(LED_RED, HIGH);
     digitalWrite(LED_BLUE, LOW);
     digitalWrite(LED_GREEN, LOW);
