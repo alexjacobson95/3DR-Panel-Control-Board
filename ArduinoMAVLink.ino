@@ -4,6 +4,7 @@
 #define LED_RED 8
 #define LED_GREEN 10
 #define LED_BLUE 3
+#define LED_RTL 4
 
 FastSerialPort0(Serial);
 
@@ -19,6 +20,7 @@ void setup() {
   pinMode(LED_RED, OUTPUT);
   pinMode(LED_GREEN, OUTPUT);
   pinMode(LED_BLUE, OUTPUT);
+  pinMode(LED_RTL, OUTPUT);
   
   startUpSequence();
 }
@@ -38,6 +40,7 @@ void loop() {
           if(mode != oldMode){
             oldMode = mode;
             LEDs(LOW);
+            digitalWrite(LED_RTL, LOW);
           }
           break;
       }
@@ -71,6 +74,7 @@ void loop() {
           break;
         case 11: //RTL
           blinkAllLEDs(150);
+          digitalWrite(LED_RTL, HIGH);
           break;
         case 12: //loiter
           digitalWrite(LED_BLUE, HIGH);
@@ -79,7 +83,7 @@ void loop() {
           blinkLED(LED_RED, 250);
           break;
         default:
-          blinkAllLEDs(750);
+          blinkLED(LED_RED, 100);
           break;
       }
       break; //end plane
@@ -110,6 +114,7 @@ void loop() {
           break;
         case 6: //RTL
           blinkAllLEDs(150);
+          digitalWrite(LED_RTL, HIGH);
           break;
         case 7: //circle
           blink2LEDs(LED_RED, LED_GREEN, 250);
@@ -129,13 +134,13 @@ void loop() {
         case 16: //hybrid
           break;
         default:
-          blinkAllLEDs(750);
+          blinkLED(LED_RED, 100);
           break;
       }
       break; //end copter
       
     default:
-      blinkAllLEDs(750);
+      blinkLED(LED_RED, 100);
       break;
   } 
 }
