@@ -1,9 +1,9 @@
 #include <FastSerial.h>
 #include "../mavlink/include/mavlink.h"        // Mavlink interface
 
-#define LED_RED 3
-#define LED_BLUE 9
+#define LED_RED 8
 #define LED_GREEN 10
+#define LED_BLUE 3
 
 FastSerialPort0(Serial);
 
@@ -17,8 +17,8 @@ unsigned long currentMillis;
 void setup() {
   Serial.begin(57600);
   pinMode(LED_RED, OUTPUT);
-  pinMode(LED_BLUE, OUTPUT);
   pinMode(LED_GREEN, OUTPUT);
+  pinMode(LED_BLUE, OUTPUT);
   
   startUpSequence();
 }
@@ -48,41 +48,41 @@ void loop() {
     case 1: //plane
       switch(mode){
         case 0: //manual
-          blinkLED(LED_RED, 250);
+          blinkLED(LED_GREEN, 250);
           break;
         case 1: //circle
+          blink2LEDs(LED_RED, LED_GREEN, 250);
           break;
         case 2: //stabilize
-          digitalWrite(LED_RED, HIGH);
+          digitalWrite(LED_GREEN, HIGH);
           break;
-        case 3: //?
-        case 4: //?
+        case 3: //training
           break;
         case 5: //FBWA
+          digitalWrite(LED_RED, HIGH);
+          blinkLED(LED_GREEN, 250);
           break;
         case 6: //FBWB
-          break;
-        case 7: //?
-        case 8: //?
-        case 9: //?
-          break;
-        case 10: //auto
+          digitalWrite(LED_RED, HIGH);
           blinkLED(LED_BLUE, 250);
           break;
+        case 10: //auto
+          digitalWrite(LED_RED, HIGH);
+          break;
         case 11: //RTL
-          blink2LEDs(LED_RED, LED_BLUE, 250);
+          blinkAllLEDs(150);
           break;
         case 12: //loiter
-          break;
-        case 13: //?
-        case 14: //?
+          digitalWrite(LED_BLUE, HIGH);
           break;
         case 15: //guided
+          blinkLED(LED_RED, 250);
+          break;
         default:
-          blinkLED(LED_RED, 100);
+          blinkAllLEDs(750);
           break;
       }
-      break;
+      break; //end plane
       
     case 2: //quad
     case 13: //hex
@@ -120,25 +120,24 @@ void loop() {
         case 9: //land
           blink2LEDs(LED_RED, LED_BLUE, 250);
           break;
-        case 10: //of_loiter
-          //none
+        case 11: //drift
+          break;
+        case 13: //sport
+          break;
+        case 15: //autotune
+          break;
+        case 16: //hybrid
           break;
         default:
-          blinkLED(LED_RED, 100);
+          blinkAllLEDs(750);
           break;
       }
-      break;
+      break; //end copter
       
     default:
-      for(int i = 0; i < uavType; i++){
-        digitalWrite(LED_RED, HIGH);
-        delay(500);
-        digitalWrite(LED_RED, LOW);
-        delay(500);
-      }
-      delay(10000);
+      blinkAllLEDs(750);
       break;
-  }
+  } 
 }
 
 void startUpSequence(){
@@ -155,7 +154,7 @@ void startUpSequence(){
 }
 
 void LEDs(int output){
-  int ledLookup[3] = {LED_RED, LED_BLUE, LED_GREEN};
+  int ledLookup[3] = {LED_RED, LED_GREEN, LED_BLUE};
   for(int i = 0; i < 3; i++){
     digitalWrite(ledLookup[i], output);
   }
@@ -194,16 +193,16 @@ void blinkAllLEDs(long interval){
     previousMillis = currentMillis;
   }else if(currentMillis - previousMillis > interval*2){
     digitalWrite(LED_RED, LOW);
-    digitalWrite(LED_BLUE, LOW);
-    digitalWrite(LED_GREEN, HIGH);
+    digitalWrite(LED_GREEN, LOW);
+    digitalWrite(LED_BLUE, HIGH);
   }else if(currentMillis - previousMillis > interval){
     digitalWrite(LED_RED, LOW);
-    digitalWrite(LED_BLUE, HIGH);
-    digitalWrite(LED_GREEN, LOW);
+    digitalWrite(LED_GREEN, HIGH);
+    digitalWrite(LED_BLUE, LOW);
   }else if(currentMillis - previousMillis > 0){
     digitalWrite(LED_RED, HIGH);
-    digitalWrite(LED_BLUE, LOW);
     digitalWrite(LED_GREEN, LOW);
+    digitalWrite(LED_BLUE, LOW);
   }
 }
 
